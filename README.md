@@ -1,0 +1,2 @@
+# magnetar
+magmetar language programing 
