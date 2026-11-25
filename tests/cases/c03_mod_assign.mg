@@ -1,0 +1,6 @@
+fn main() {
+    let x = 10;
+    x %= 3;
+    print(x);
+    print("\n");
+}

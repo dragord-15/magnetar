@@ -1,0 +1,530 @@
+{
+  "Main Function": {
+    "prefix": "main",
+    "body": [
+      "fn main() {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Magnetar main entrypoint function"
+  },
+  "Function Declaration": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:params}) -> ${3:void} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define a function with return type"
+  },
+  "Void Function": {
+    "prefix": "fnv",
+    "body": [
+      "fn ${1:name}(${2:params}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define a void function"
+  },
+  "Extern Function": {
+    "prefix": "extern",
+    "body": [
+      "extern fn ${1:name}(${2:params}) -> ${3:void};"
+    ],
+    "description": "Declare an external / builtin function stub"
+  },
+  "Variable Declaration": {
+    "prefix": "let",
+    "body": [
+      "let ${1:name} = ${2:value};"
+    ],
+    "description": "Define a variable with inferred type"
+  },
+  "Typed Variable Declaration": {
+    "prefix": "lett",
+    "body": [
+      "let ${1:name}: ${2:int} = ${3:value};"
+    ],
+    "description": "Define a variable with explicit type"
+  },
+  "Struct Definition": {
+    "prefix": "struct",
+    "body": [
+      "struct ${1:Name} {",
+      "\t${2:int} ${3:x};",
+      "\t${4:int} ${5:y};",
+      "}"
+    ],
+    "description": "Define a struct"
+  },
+  "Enum Definition": {
+    "prefix": "enum",
+    "body": [
+      "enum ${1:Name} {",
+      "\t${2:FIRST} = 1,",
+      "\t${3:SECOND} = 2",
+      "}"
+    ],
+    "description": "Define an enum"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if (${1:condition}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": [
+      "if (${1:condition}) {",
+      "\t$2",
+      "} else {",
+      "\t$0",
+      "}"
+    ],
+    "description": "If-Else statement"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "while (${1:condition}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "Do-While Loop": {
+    "prefix": "do",
+    "body": [
+      "do {",
+      "\t$0",
+      "} while (${1:condition});"
+    ],
+    "description": "Do-while loop"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for (${1:int i = 0}; ${2:i < n}; ${3:i = i + 1}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "C-style for loop"
+  },
+  "For-in Range Loop": {
+    "prefix": "forin",
+    "body": [
+      "for (${1:int i} in range(${2:0}, ${3:10})) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Range-based for loop"
+  },
+  "Switch Statement": {
+    "prefix": "switch",
+    "body": [
+      "switch (${1:expression}) {",
+      "\tcase ${2:1}: {",
+      "\t\t$3",
+      "\t}",
+      "\tdefault: {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Switch-case statement"
+  },
+  "Match Statement": {
+    "prefix": "match",
+    "body": [
+      "match (${1:expression}) {",
+      "\t${2:1} => { $3 }",
+      "\t_ => { $0 }",
+      "}"
+    ],
+    "description": "Pattern match statement"
+  },
+  "Print": {
+    "prefix": "print",
+    "body": [
+      "print(${1:\"Hello, Magnetar!\\n\"});"
+    ],
+    "description": "Print to stdout"
+  },
+  "Print Line": {
+    "prefix": "println",
+    "body": [
+      "print(${1:text}); print(\"\\n\");"
+    ],
+    "description": "Print value followed by newline"
+  },
+  "Dynamic Allocation": {
+    "prefix": "alloc",
+    "body": [
+      "alloc<${1:int}>(${2:10});"
+    ],
+    "description": "Allocate typed memory buffer"
+  },
+  "Fixed Array": {
+    "prefix": "fixed",
+    "body": [
+      "fixed<${1:int}, ${2:10}>"
+    ],
+    "description": "Fixed size generic array"
+  },
+  "Use Module": {
+    "prefix": "use",
+    "body": [
+      "use \"${1:module}\";"
+    ],
+    "description": "Include a module file"
+  },
+  "Syscall Open File": {
+    "prefix": "sysopen",
+    "body": [
+      "int ${1:fd} = sys_open(\"${2:data.txt}\", ${3:0}, ${4:0});"
+    ],
+    "description": "Open a file descriptor using sys_open"
+  },
+  "Syscall Read File": {
+    "prefix": "sysread",
+    "body": [
+      "int ${1:bytes_read} = sys_read(${2:fd}, ${3:buf}, ${4:count});"
+    ],
+    "description": "Read from file descriptor using sys_read"
+  },
+  "Syscall Write File": {
+    "prefix": "syswrite",
+    "body": [
+      "sys_write(${1:1}, ${2:buf}, ${3:count});"
+    ],
+    "description": "Write to file descriptor using sys_write"
+  },
+  "Syscall Close File": {
+    "prefix": "sysclose",
+    "body": [
+      "sys_close(${1:fd});"
+    ],
+    "description": "Close file descriptor using sys_close"
+  },
+
+  "Class Definition": {
+    "prefix": "class",
+    "body": [
+      "class ${1:Name} {",
+      "\t${2:int} ${3:field};",
+      "",
+      "\tfn ${4:method}() {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Define a class with fields and methods"
+  },
+  "Class with Inheritance": {
+    "prefix": "classext",
+    "body": [
+      "class ${1:Child} extends ${2:Parent} {",
+      "\t${3:int} ${4:field};",
+      "",
+      "\tfn ${5:method}() {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Define a class that extends a parent class"
+  },
+  "Union Definition": {
+    "prefix": "union",
+    "body": [
+      "union ${1:Name} {",
+      "\t${2:int} ${3:a};",
+      "\t${4:float} ${5:b};",
+      "}"
+    ],
+    "description": "Define a union (overlapping fields at offset 0)"
+  },
+  "Impl Block": {
+    "prefix": "impl",
+    "body": [
+      "impl ${1:Type} {",
+      "\tfn ${2:method}(${3:}) {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Add methods to a type via impl block"
+  },
+  "Entry Function": {
+    "prefix": "entry",
+    "body": [
+      "entry fn ${1:start}() {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Define a custom entry point function"
+  },
+  "Defer Statement": {
+    "prefix": "defer",
+    "body": [
+      "defer ${1:free(ptr)};"
+    ],
+    "description": "Defer execution until end of function (LIFO)"
+  },
+  "Try-Catch": {
+    "prefix": "try",
+    "body": [
+      "try {",
+      "\t$1",
+      "} catch {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Try-catch exception handling block"
+  },
+  "Try-Catch-Finally": {
+    "prefix": "trycf",
+    "body": [
+      "try {",
+      "\t$1",
+      "} catch {",
+      "\t$2",
+      "} finally {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Try-catch-finally exception handling block"
+  },
+  "Throw": {
+    "prefix": "throw",
+    "body": [
+      "throw ${1:\"error message\"};"
+    ],
+    "description": "Throw an exception"
+  },
+  "Assert": {
+    "prefix": "assert",
+    "body": [
+      "assert(${1:condition});"
+    ],
+    "description": "Runtime assertion (exits with code 1 on failure)"
+  },
+  "Async Block": {
+    "prefix": "async",
+    "body": [
+      "async {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Asynchronous block (fork-based)"
+  },
+  "Await": {
+    "prefix": "await",
+    "body": [
+      "await ${1:pid};"
+    ],
+    "description": "Wait for an async task to complete"
+  },
+  "Spawn": {
+    "prefix": "spawn",
+    "body": [
+      "let ${1:pid} = spawn {",
+      "\t$0",
+      "};"
+    ],
+    "description": "Spawn an async task and get its PID"
+  },
+  "Parallel Block": {
+    "prefix": "parallel",
+    "body": [
+      "parallel {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Parallel execution block (waited immediately)"
+  },
+  "Const Declaration": {
+    "prefix": "const",
+    "body": [
+      "const ${1:name} = ${2:value};"
+    ],
+    "description": "Declare a compile-time constant"
+  },
+  "Static Variable": {
+    "prefix": "static",
+    "body": [
+      "static ${1:int} ${2:name} = ${3:0};"
+    ],
+    "description": "Declare a static variable (persists between calls)"
+  },
+  "Unsafe Block": {
+    "prefix": "unsafe",
+    "body": [
+      "unsafe {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Unsafe code block for advanced operations"
+  },
+  "New Heap Allocation": {
+    "prefix": "new",
+    "body": [
+      "let ${1:ptr} = new ${2:Type};"
+    ],
+    "description": "Allocate an object on the heap"
+  },
+  "Delete": {
+    "prefix": "delete",
+    "body": [
+      "delete ${1:ptr};"
+    ],
+    "description": "Free a heap-allocated pointer"
+  },
+  "Free Memory": {
+    "prefix": "free",
+    "body": [
+      "free(${1:ptr});"
+    ],
+    "description": "Free alloc/new allocated memory"
+  },
+  "Dynamic Array": {
+    "prefix": "dyn",
+    "body": [
+      "dyn<${1:int}> ${2:arr} = {${3:1, 2, 3}};"
+    ],
+    "description": "Create a dynamic array with push/pop/len/clear"
+  },
+  "Tuple": {
+    "prefix": "tuple",
+    "body": [
+      "tuple ${1:name} = (${2:1}, ${3:\"hello\"});"
+    ],
+    "description": "Create a tuple with numbered fields (._0, ._1, ...)"
+  },
+  "Range": {
+    "prefix": "range",
+    "body": [
+      "range(${1:0}, ${2:10})"
+    ],
+    "description": "Create a range value {start, end, step}"
+  },
+  "Cast": {
+    "prefix": "cast",
+    "body": [
+      "cast<${1:int}>(${2:expr})"
+    ],
+    "description": "Explicit type cast"
+  },
+  "Sizeof": {
+    "prefix": "sizeof",
+    "body": [
+      "sizeof(${1:Type})"
+    ],
+    "description": "Get size of a type or variable in bytes"
+  },
+  "Typeof": {
+    "prefix": "typeof",
+    "body": [
+      "typeof(${1:expr})"
+    ],
+    "description": "Get the type of an expression"
+  },
+  "Goto Label": {
+    "prefix": "goto",
+    "body": [
+      "goto ${1:label};"
+    ],
+    "description": "Jump to a label"
+  },
+  "Inline Assembly": {
+    "prefix": "asm",
+    "body": [
+      "asm {",
+      "\t${1:mov rax, 0}",
+      "}"
+    ],
+    "description": "Inline assembly block (x86-64)"
+  },
+  "Copy": {
+    "prefix": "copy",
+    "body": [
+      "let ${1:b} = copy ${2:a};"
+    ],
+    "description": "Deep copy of a value"
+  },
+  "Clone": {
+    "prefix": "clone",
+    "body": [
+      "let ${1:b} = clone ${2:a};"
+    ],
+    "description": "Clone (deep copy) a value"
+  },
+  "Borrow": {
+    "prefix": "borrow",
+    "body": [
+      "let ${1:r} = borrow ${2:value};"
+    ],
+    "description": "Take a reference (address) of a value"
+  },
+  "Move": {
+    "prefix": "move",
+    "body": [
+      "let ${1:b} = move ${2:a};"
+    ],
+    "description": "Move value and empty the source"
+  },
+  "Ref Pointer": {
+    "prefix": "ref",
+    "body": [
+      "ref<${1:int}> ${2:name} = ${3:value};"
+    ],
+    "description": "Declare a safe reference pointer"
+  },
+  "Own Pointer": {
+    "prefix": "own",
+    "body": [
+      "own<${1:int}> ${2:name} = ${3:value};"
+    ],
+    "description": "Declare an ownership pointer"
+  },
+  "Raw Pointer": {
+    "prefix": "raw",
+    "body": [
+      "raw<${1:int}> ${2:name} = ${3:value};"
+    ],
+    "description": "Declare a raw pointer"
+  },
+  "Slice": {
+    "prefix": "slice",
+    "body": [
+      "${1:arr}[${2:start}..${3:end}]"
+    ],
+    "description": "Array slice with start..end"
+  },
+  "Use As Alias": {
+    "prefix": "useas",
+    "body": [
+      "use \"${1:module}\" as ${2:alias};"
+    ],
+    "description": "Import a module with an alias name"
+  },
+  "Export Function": {
+    "prefix": "export",
+    "body": [
+      "export fn ${1:name}(${2:params}) -> ${3:void} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Export a function definition"
+  },
+  "As Type Cast": {
+    "prefix": "as",
+    "body": [
+      "${1:expr} as ${2:float}"
+    ],
+    "description": "Type conversion using as"
+  }
+}

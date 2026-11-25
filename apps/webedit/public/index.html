@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magnetar WebEdit</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <span class="logo">◈</span>
+        <span class="app-name">Magnetar WebEdit</span>
+        <span id="root-path" class="root-path"></span>
+      </div>
+      <div class="titlebar-right">
+        <button class="tb-btn" id="btn-refresh" title="Refresh Explorer">↻</button>
+        <button class="tb-btn" id="btn-save" title="Save (Ctrl+S)">Save</button>
+        <button class="tb-btn" id="btn-build" title="Build (Ctrl+B)">Build</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <span>EXPLORER</span>
+          <div class="sidebar-actions">
+            <button class="icon-btn" id="btn-new-file" title="New File">+F</button>
+            <button class="icon-btn" id="btn-new-dir" title="New Folder">+D</button>
+          </div>
+        </div>
+        <div id="file-tree" class="file-tree"></div>
+      </div>
+      <div class="resizer" id="resizer"></div>
+      <div class="editor-area">
+        <div id="tabs" class="tabs"></div>
+        <div id="welcome" class="welcome">
+          <h1>Magnetar WebEdit</h1>
+          <p>VSCode-like editor powered by Magnetar (.mg) backend</p>
+          <div class="welcome-actions">
+            <p>Open a file from the explorer or create a new one.</p>
+            <p><kbd>Ctrl+S</kbd> Save &nbsp; <kbd>Ctrl+B</kbd> Build &nbsp; <kbd>Ctrl+P</kbd> Quick Open &nbsp; <kbd>Ctrl+F</kbd> Find</p>
+          </div>
+        </div>
+        <div id="editor-wrap" class="editor-wrap hidden">
+          <div class="editor-gutter" id="gutter"></div>
+          <div class="editor-scroll" id="editor-scroll">
+            <pre id="highlight" class="highlight" aria-hidden="true"></pre>
+            <textarea id="editor" class="editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="panel">
+      <div class="panel-header">
+        <span class="panel-tab active" data-tab="output">OUTPUT</span>
+        <span class="panel-tab" data-tab="search">SEARCH</span>
+        <span class="panel-tab" data-tab="problems">PROBLEMS</span>
+        <button class="icon-btn panel-close" id="panel-close">×</button>
+      </div>
+      <div class="panel-body" id="panel-output"></div>
+      <div class="panel-body hidden" id="panel-search">
+        <div class="search-bar">
+          <input id="search-input" placeholder="Search in files..." />
+          <button id="search-btn">Search</button>
+        </div>
+        <div id="search-results" class="search-results"></div>
+      </div>
+      <div class="panel-body hidden" id="panel-problems"></div>
+    </div>
+    <div class="statusbar" id="statusbar">
+      <span id="status-msg">Ready</span>
+      <span class="status-right">
+        <span id="status-lang">plaintext</span>
+        <span id="status-pos">Ln 1, Col 1</span>
+        <span id="status-enc">UTF-8</span>
+      </span>
+    </div>
+  </div>
+  <div id="palette" class="palette hidden">
+    <input id="palette-input" placeholder="Type a file name..." />
+    <div id="palette-list" class="palette-list"></div>
+  </div>
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <div id="modal-title" class="modal-title"></div>
+      <input id="modal-input" class="modal-input" />
+      <div class="modal-actions">
+        <button id="modal-cancel">Cancel</button>
+        <button id="modal-ok" class="primary">OK</button>
+      </div>
+    </div>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

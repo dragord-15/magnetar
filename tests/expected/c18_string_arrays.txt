@@ -1,0 +1,8 @@
+ali bob cat
+TWO one+three
+equal
+abcd
+red green
+dyn1
+heap0 heap1
+<cat>

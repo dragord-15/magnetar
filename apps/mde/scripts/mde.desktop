@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=MDE
+Comment=Magnetar Desktop Environment
+Exec=/usr/lib/mde/mde-session --mode=target
+Type=Application
+DesktopNames=MDE

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "session": "mde",
+  "compositor": {
+    "ipc_socket": "/tmp/mde-compositor.sock",
+    "target_ipc_socket": "/run/user/%UID%/mde/compositor.sock",
+    "dev_mode": true
+  },
+  "display_manager": {
+    "greeter": "/usr/lib/mde/mde-greeter",
+    "session": "/usr/lib/mde/mde-session",
+    "tty": 7
+  },
+  "apps": {
+    "files": "/usr/lib/mde/apps/mde-files",
+    "settings": "/usr/lib/mde/apps/mde-settings",
+    "hello": "/usr/lib/mde/apps/mde-hello"
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Magnetar",
+  "scopeName": "source.magnetar",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#characters" },
+    { "include": "#numbers" },
+    { "include": "#constants" },
+    { "include": "#function-declaration" },
+    { "include": "#type-declaration" },
+    { "include": "#keywords-control" },
+    { "include": "#keywords-exception" },
+    { "include": "#keywords-declaration" },
+    { "include": "#keywords-storage" },
+    { "include": "#keywords-memory" },
+    { "include": "#types-primitive" },
+    { "include": "#types-container" },
+    { "include": "#types-user-defined" },
+    { "include": "#builtins-core" },
+    { "include": "#function-call" },
+    { "include": "#variables-language" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.magnetar",
+          "begin": "//",
+          "end": "$"
+        },
+        {
+          "name": "comment.block.magnetar",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.magnetar",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.magnetar",
+          "match": "\\\\([nrtvfb0'\"\\\\]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})"
+        }
+      ]
+    },
+    "characters": {
+      "name": "string.quoted.single.magnetar",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.magnetar",
+          "match": "\\\\([nrtvfb0'\"\\\\]|x[0-9a-fA-F]{2})"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.magnetar",
+          "match": "\\b0[xX][0-9a-fA-F_]+\\b"
+        },
+        {
+          "name": "constant.numeric.binary.magnetar",
+          "match": "\\b0[bB][01_]+\\b"
+        },
+        {
+          "name": "constant.numeric.octal.magnetar",
+          "match": "\\b0[oO][0-7_]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.magnetar",
+          "match": "\\b[0-9][0-9_]*\\.[0-9][0-9_]*([eE][+-]?[0-9_]+)?[fF]?\\b"
+        },
+        {
+          "name": "constant.numeric.float.scientific.magnetar",
+          "match": "\\b[0-9][0-9_]*[eE][+-]?[0-9_]+[fF]?\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.magnetar",
+          "match": "\\b[0-9][0-9_]*\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.magnetar",
+          "match": "\\b(true|false|null|nan|inf)\\b"
+        }
+      ]
+    },
+    "function-declaration": {
+      "match": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "keyword.declaration.function.magnetar" },
+        "2": { "name": "entity.name.function.magnetar" }
+      }
+    },
+    "type-declaration": {
+      "match": "\\b(struct|enum|class|union)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "keyword.declaration.type.magnetar" },
+        "2": { "name": "entity.name.type.magnetar" }
+      }
+    },
+    "keywords-control": {
+      "patterns": [
+        {
+          "name": "keyword.control.magnetar",
+          "match": "\\b(if|else|switch|case|default|for|while|do|break|continue|return|goto|defer|await|async|spawn|match)\\b"
+        }
+      ]
+    },
+    "keywords-exception": {
+      "patterns": [
+        {
+          "name": "keyword.control.exception.magnetar",
+          "match": "\\b(assert|throw|try|catch|finally)\\b"
+        }
+      ]
+    },
+    "keywords-declaration": {
+      "patterns": [
+        {
+          "name": "keyword.declaration.magnetar",
+          "match": "\\b(fn|let|struct|class|enum|union|use|export|as|impl|extends|entry)\\b"
+        }
+      ]
+    },
+    "keywords-storage": {
+      "patterns": [
+        {
+          "name": "storage.modifier.magnetar",
+          "match": "\\b(const|static|extern|inline|volatile|register|unsafe|parallel|asm)\\b"
+        }
+      ]
+    },
+    "keywords-memory": {
+      "patterns": [
+        {
+          "name": "keyword.operator.memory.magnetar",
+          "match": "\\b(alloc|free|sizeof|typeof|cast|move|copy|borrow|clone|new|delete|ref|own|raw)\\b"
+        }
+      ]
+    },
+    "types-primitive": {
+      "patterns": [
+        {
+          "name": "storage.type.primitive.magnetar",
+          "match": "\\b(int|float|bool|char|string|void|auto|any|byte|word|dword|qword|half)\\b"
+        }
+      ]
+    },
+    "types-container": {
+      "patterns": [
+        {
+          "name": "storage.type.container.magnetar",
+          "match": "\\b(fixed|dyn|slice|array|tuple|range)\\b"
+        }
+      ]
+    },
+    "types-user-defined": {
+      "patterns": [
+        {
+          "name": "entity.name.type.magnetar",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "builtins-core": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.magnetar",
+          "match": "\\b(print)\\b"
+        }
+      ]
+    },
+    "function-call": {
+      "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "entity.name.function.call.magnetar" }
+      }
+    },
+    "variables-language": {
+      "patterns": [
+        {
+          "name": "variable.language.magnetar",
+          "match": "\\b(this|self|super|base)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arrow.magnetar",
+          "match": "(->|=>)"
+        },
+        {
+          "name": "keyword.operator.comparison.magnetar",
+          "match": "(==|!=|<=|>=|<|>)"
+        },
+        {
+          "name": "keyword.operator.assignment.compound.magnetar",
+          "match": "(\\+=|-=|\\*=|/=|%=|<<=|>>=|&=|\\|=|\\^=)"
+        },
+        {
+          "name": "keyword.operator.assignment.magnetar",
+          "match": "(=)"
+        },
+        {
+          "name": "keyword.operator.increment.magnetar",
+          "match": "(\\+\\+|--)"
+        },
+        {
+          "name": "keyword.operator.arithmetic.magnetar",
+          "match": "(\\+|-|\\*|/|%)"
+        },
+        {
+          "name": "keyword.operator.logical.magnetar",
+          "match": "(&&|\\|\\||!)"
+        },
+        {
+          "name": "keyword.operator.bitwise.magnetar",
+          "match": "(<<|>>|&|\\||\\^|~)"
+        },
+        {
+          "name": "keyword.operator.range.magnetar",
+          "match": "(\\.\\.)"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.terminator.statement.magnetar",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.separator.magnetar",
+          "match": "[,:]"
+        },
+        {
+          "name": "punctuation.accessor.magnetar",
+          "match": "\\."
+        },
+        {
+          "name": "keyword.operator.ternary.magnetar",
+          "match": "\\?"
+        }
+      ]
+    }
+  }
+}

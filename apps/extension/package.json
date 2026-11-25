@@ -1,0 +1,56 @@
+{
+  "name": "magnetar",
+  "displayName": "Magnetar Language Support",
+  "description": "Rich language support, syntax highlighting, snippets, and configuration for the Magnetar programming language (.mg, .fc)",
+  "version": "1.0.0",
+  "publisher": "magnetar",
+  "icon": "logo.png",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "magnetar",
+    "falcon",
+    "compiler",
+    "systems programming"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "magnetar",
+        "aliases": [
+          "Magnetar",
+          "magnetar",
+          "Falcon",
+          "falcon"
+        ],
+        "extensions": [
+          ".mg",
+          ".fc"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./logo.png",
+          "dark": "./logo.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "magnetar",
+        "scopeName": "source.magnetar",
+        "path": "./syntaxes/magnetar.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "magnetar",
+        "path": "./snippets/magnetar.json"
+      }
+    ]
+  }
+}
