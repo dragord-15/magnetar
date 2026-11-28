@@ -14,9 +14,32 @@ typedef struct {
     uint32_t offset;
 } ExportSymbol;
 
+/* Relocation kinds used by MAGO object files.  x86_64 objects use the legacy
+   fixed PC-relative type 0; ARM64 objects use the typed MAG2 format. */
+typedef enum {
+    MAG_PATCH_X86_PC32          = 0,
+    MAG_PATCH_AARCH64_ABS64     = 1,
+    MAG_PATCH_AARCH64_ABS32     = 2,
+    MAG_PATCH_AARCH64_PREL32    = 3,
+    MAG_PATCH_AARCH64_PREL64    = 4,
+    MAG_PATCH_AARCH64_CALL26    = 5,
+    MAG_PATCH_AARCH64_JUMP26    = 6,
+    MAG_PATCH_AARCH64_ADRP_ADD  = 7,
+    MAG_PATCH_AARCH64_CONDBR19  = 8,
+    MAG_PATCH_AARCH64_TSTBR14   = 9,
+    MAG_PATCH_AARCH64_LDST8_ABS_LO12_NC  = 10,
+    MAG_PATCH_AARCH64_LDST16_ABS_LO12_NC = 11,
+    MAG_PATCH_AARCH64_LDST32_ABS_LO12_NC = 12,
+    MAG_PATCH_AARCH64_LDST64_ABS_LO12_NC = 13,
+    /* Like ABS64, but patches an eight-byte raw pointer in the data image
+       instead of a four-instruction movz/movk sequence in code. */
+    MAG_PATCH_AARCH64_ABS64_RAW = 14
+} MagPatchType;
+
 typedef struct {
     char* name;
     uint32_t position;
+    uint32_t type;
 } ImportPatch;
 
 typedef struct {

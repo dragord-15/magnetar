@@ -100,6 +100,7 @@ static bool x86_64_generate(void* state, IRProgram* ir, BackendResult* result, b
                     sizeof(ImportPatch) * result->num_patches);
                 result->patches[result->num_patches - 1].name = strdup(p->label_name);
                 result->patches[result->num_patches - 1].position = p->position;
+                result->patches[result->num_patches - 1].type = MAG_PATCH_X86_PC32;
             }
         }
     }

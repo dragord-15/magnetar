@@ -93,9 +93,13 @@ Start at [docs_mag/README.md](docs_mag/README.md). Useful entry points:
 
 ## حالة الدعم / Platform status
 
-- Supported and tested: Linux x86_64.
-- Partial: arm64 and riscv backends exist but are not fully validated.
-- Not implemented: baremetal, raw asm, and flat binary output targets.
+- **x86_64 Linux ELF64** — stable reference backend; also the default on non-ARM hosts.
+- **Windows x64 PE64** — stable; use `--target windows` / `win64` / `x86_64-windows`.
+- **ARM64/AArch64 Linux ELF64** — working standalone codegen and end-to-end `mag` object linking;
+  native default on ARM hosts. `--target arm64` and `--target aarch64` are both accepted.
+- **RISC-V** — planned; the backend currently fails fast with a clear "not yet implemented" error.
+- **Baremetal** — not implemented and explicitly rejected.
+- Output formats: `elf` (default), `pe` (x86_64 only), `asm` (assembly listing), `bin` (flat raw bytes).
 - Some built-ins such as `audio_play`, `sql_*`, `crypto_*`, and `regex_match` are placeholders;
   see [09_builtins.md](docs_mag/09_builtins.md).
 

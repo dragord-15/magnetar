@@ -1,0 +1,3 @@
+[Audio] Playing track: 'song.mg'
+[SQL] Connecting to database: 'db://x'
+42|

@@ -10,6 +10,8 @@
 #include <signal.h>
 #include "backend/backend.h"
 #include "backend/elf_writer.h"
+#include "backend/asm_writer.h"
+#include "backend/bin_writer.h"
 #include "lexer/lexer.h"
 #include "parser/ast.h"
 #include "parser/parser.h"
@@ -444,8 +446,13 @@ char* preprocess_source(const char* source, const char* source_dir) {
 }
 
 static int object_mode = 0;
+#if defined(__aarch64__) || defined(__ARM_ARCH_8A__) || defined(_M_ARM64)
+static const char* target_arch = "arm64"; /* build for the machine we run on */
+#else
 static const char* target_arch = "x86_64";
-static const char* output_format = "elf"; /* elf, pe */
+#endif
+static const char* output_format = "elf"; /* elf, pe, asm, bin */
+static const char* requested_format = NULL; /* explicit --format wins over target aliases */
 static const char* entry_function = "main";
 static int entry_explicit = 0;
 
@@ -547,6 +554,17 @@ int compile_file(const char* filename, const char* output_name) {
     }
 
     if (object_mode) {
+        if (strcmp(output_format, "elf") != 0) {
+            fprintf(stderr, "Error: --format %s cannot be combined with -c (object files are always ELF/MAGO).\n",
+                    output_format);
+            backend_result_free(&result);
+            backend->destroy(bstate);
+            IRProgram_free(ir);
+            ASTNode_free(ast);
+            free(source);
+            GC_shutdown();
+            return 1;
+        }
         int res = backend->write_object(output_name, &result) ? 0 : 1;
         backend_result_free(&result);
         backend->destroy(bstate);
@@ -557,9 +575,15 @@ int compile_file(const char* filename, const char* output_name) {
         return res;
     }
 
-    // Write executable via backend
+    /* Write executable (or the requested raw/text representation). */
     /* status silenced */;
-    bool ok = backend->write_executable(output_name, &result);
+    bool ok;
+    if (strcmp(output_format, "asm") == 0)
+        ok = asm_write_file(output_name, &result, target_arch);
+    else if (strcmp(output_format, "bin") == 0)
+        ok = bin_write_file(output_name, &result);
+    else
+        ok = backend->write_executable(output_name, &result);
     if (ok) {
         size_t total = result.code_size + result.rodata_size;
         printf("[Magnetar] Success! Created '%s' (%zu bytes)\n", output_name, total);
@@ -584,15 +608,14 @@ int main(int argc, char** argv) {
         printf("\nOptions:\n");
         printf("  -c                Compile to object file (.o)\n");
         printf("  -o <output>       Output file name\n");
-        printf("  --target <arch>   Target: x86_64 (default), arm64, riscv, windows/win64\n");
-        printf("  --format <fmt>    Output format: elf (default), pe (Windows PE64)\n");
+        printf("  --target <arch>   Target: x86_64, arm64/aarch64 (native default on ARM), riscv, windows/win64\n");
+        printf("  --format <fmt>    Output format: elf (default), pe (x86_64 only), asm, bin\n");
         printf("  --entry <name>    Entry function called at startup (default: main)\n");
         printf("  -w, --watch       Live compile and run on file changes\n");
         printf("\nTargets status:\n");
-        printf("  x86_64            Stable (ELF Linux, PE64 Windows)\n");
-        printf("  arm64             In progress\n");
-        printf("  riscv             In progress\n");
-        printf("  baremetal         Not implemented yet\n");
+        printf("  x86_64            Stable (ELF64 Linux, PE64 Windows)\n");
+        printf("  arm64/aarch64     Working standalone ELF64 AArch64 (native on ARM)\n");
+        printf("  riscv             Planned - not implemented\n");
         return 1;
     }
 
@@ -603,17 +626,16 @@ int main(int argc, char** argv) {
             printf("\nOptions:\n");
             printf("  -c                Compile to object file (.o)\n");
             printf("  -o <output>       Output file name\n");
-            printf("  --target <arch>   Target: x86_64 (default), arm64, riscv, windows/win64\n");
-            printf("  --format <fmt>    Output format: elf (default)\n");
+            printf("  --target <arch>   Target: x86_64, arm64/aarch64 (native default on ARM), riscv, windows/win64\n");
+            printf("  --format <fmt>    Output format: elf (default), pe (x86_64 only), asm, bin\n");
             printf("  --entry <name>    Entry function called at startup (default: main)\n");
             printf("  -w, --watch       Live compile and run on file changes\n");
             printf("  -h, --help        Show this help message\n");
             printf("\nTargets status:\n");
-            printf("  x86_64            Stable (ELF on Linux, PE64 on Windows)\n");
-            printf("  arm64             Backend present - may need more testing (ELF)\n");
-            printf("  riscv             Backend present - may need more testing (ELF)\n");
-            printf("  baremetal         Not implemented yet\n");
-            printf("\nFormats: elf (default), pe/windows/exe for Windows PE64.\n");
+            printf("  x86_64            Stable (ELF64 Linux, PE64 Windows)\n");
+            printf("  arm64/aarch64     Working standalone ELF64 AArch64 (native on ARM)\n");
+            printf("  riscv             Planned - not implemented\n");
+            printf("\nFormats: elf (default), pe/windows/exe (x86_64 only), asm (text listing), bin (flat raw bytes).\n");
             return 0;
         }
     }
@@ -639,49 +661,53 @@ int main(int argc, char** argv) {
         if (strcmp(target_arch, "baremetal") == 0) {
             fprintf(stderr, "Error: --target=baremetal is not implemented yet.\n");
             fprintf(stderr, "       Baremetal target (no OS) is planned but not available in this version.\n");
-            fprintf(stderr, "       Currently supported: x86_64, arm64, riscv (ELF)\n");
+            fprintf(stderr, "       Currently supported: x86_64, arm64/aarch64 (ELF); riscv is planned.\n");
             return 1;
         }
         if (strcmp(target_arch, "windows") == 0 || strcmp(target_arch, "x86_64-windows") == 0 || strcmp(target_arch, "win64") == 0) {
             target_arch = "x86_64";
             output_format = "pe";
         }
+        if (strcmp(target_arch, "aarch64") == 0) target_arch = "arm64";
         i++;
         } else if (strncmp(argv[i], "--target=", 9) == 0) {
             target_arch = argv[i] + 9;
         if (strcmp(target_arch, "baremetal") == 0) {
             fprintf(stderr, "Error: --target=baremetal is not implemented yet.\n");
             fprintf(stderr, "       Baremetal target (no OS) is planned but not available in this version.\n");
-            fprintf(stderr, "       Currently supported: x86_64, arm64, riscv (ELF)\n");
+            fprintf(stderr, "       Currently supported: x86_64, arm64/aarch64 (ELF); riscv is planned.\n");
             return 1;
         }
         if (strcmp(target_arch, "windows") == 0 || strcmp(target_arch, "x86_64-windows") == 0 || strcmp(target_arch, "win64") == 0) {
             target_arch = "x86_64";
             output_format = "pe";
         }
+        if (strcmp(target_arch, "aarch64") == 0) target_arch = "arm64";
         } else if (strcmp(argv[i], "--format") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "Error: --format requires an argument (elf)\n");
+                fprintf(stderr, "Error: --format requires an argument (elf, pe, asm, bin)\n");
                 return 1;
             }
             const char* fmt = argv[i + 1];
-            if (strcmp(fmt, "elf") == 0) output_format = "elf";
-            else if (strcmp(fmt, "pe") == 0 || strcmp(fmt, "windows") == 0 || strcmp(fmt, "exe") == 0) output_format = "pe";
+            if (strcmp(fmt, "elf") == 0) output_format = requested_format = "elf";
+            else if (strcmp(fmt, "pe") == 0 || strcmp(fmt, "windows") == 0 || strcmp(fmt, "exe") == 0) output_format = requested_format = "pe";
+            else if (strcmp(fmt, "asm") == 0 || strcmp(fmt, "s") == 0) output_format = requested_format = "asm";
+            else if (strcmp(fmt, "bin") == 0 || strcmp(fmt, "binary") == 0) output_format = requested_format = "bin";
             else {
                 fprintf(stderr, "Error: --format '%s' is not implemented yet.\n", fmt);
-                fprintf(stderr, "       Supported: elf, pe (windows/exe)\n");
-                fprintf(stderr, "       Planned: asm (.s), bin (.bin)\n");
+                fprintf(stderr, "       Supported: elf, pe (x86_64 only), asm, bin\n");
                 return 1;
             }
             i++;
         } else         if (strncmp(argv[i], "--format=", 9) == 0) {
             const char* fmt = argv[i] + 9;
-            if (strcmp(fmt, "elf") == 0) output_format = "elf";
-            else if (strcmp(fmt, "pe") == 0 || strcmp(fmt, "windows") == 0 || strcmp(fmt, "exe") == 0) output_format = "pe";
+            if (strcmp(fmt, "elf") == 0) output_format = requested_format = "elf";
+            else if (strcmp(fmt, "pe") == 0 || strcmp(fmt, "windows") == 0 || strcmp(fmt, "exe") == 0) output_format = requested_format = "pe";
+            else if (strcmp(fmt, "asm") == 0 || strcmp(fmt, "s") == 0) output_format = requested_format = "asm";
+            else if (strcmp(fmt, "bin") == 0 || strcmp(fmt, "binary") == 0) output_format = requested_format = "bin";
             else {
                 fprintf(stderr, "Error: --format '%s' is not implemented yet.\n", fmt);
-                fprintf(stderr, "       Supported: elf, pe (windows/exe)\n");
-                fprintf(stderr, "       Planned: asm (.s), bin (.bin)\n");
+                fprintf(stderr, "       Supported: elf, pe (x86_64 only), asm, bin\n");
                 return 1;
             }
         } else if (strcmp(argv[i], "--entry") == 0) {
@@ -708,6 +734,17 @@ int main(int argc, char** argv) {
         } else if (argv[i][0] != '-') {
             filename = argv[i];
         }
+    }
+
+    /* An explicit --format is authoritative regardless of flag order. */
+    if (requested_format) output_format = requested_format;
+
+    /* PE64 is implemented only by the x86_64 backend.  Failing loudly here
+       prevents --format pe from being silently ignored on ARM64/RISC-V. */
+    if (strcmp(output_format, "pe") == 0 && strcmp(target_arch, "x86_64") != 0) {
+        fprintf(stderr, "Error: PE64 output is only supported with --target x86_64 (got '%s').\n",
+                target_arch);
+        return 1;
     }
 
     if (!filename) {

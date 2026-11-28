@@ -467,7 +467,8 @@ static const char *remember_type_name(const char *name) {
 static bool token_starts_type(Parser *parser) {
   switch (parser->current_token.type) {
   case TOK_KW_INT: case TOK_KW_FLOAT: case TOK_KW_BOOL: case TOK_KW_CHAR:
-  case TOK_KW_STRING: case TOK_KW_RAW: case TOK_KW_REF: case TOK_KW_OWN:
+  case TOK_KW_STRING: case TOK_KW_PTR: case TOK_KW_RAW: case TOK_KW_REF:
+  case TOK_KW_OWN:
   case TOK_KW_AUTO: case TOK_KW_TYPEOF: case TOK_KW_BYTE: case TOK_KW_WORD:
   case TOK_KW_DWORD: case TOK_KW_QWORD: case TOK_KW_HALF: case TOK_KW_FIXED:
   case TOK_KW_ARRAY: case TOK_KW_TUPLE:
@@ -1123,18 +1124,20 @@ TokenType base_type = TOK_UNKNOWN;
             last_type_name = type_name_with_depth(base_name, depth);
         }
         base_type = t;
-  } else if (t == TOK_KW_RAW && parser->next_token.type != TOK_LT) {
-    /* Bare `raw` is the 8-byte raw storage type. */
+  } else if ((t == TOK_KW_RAW || t == TOK_KW_PTR) &&
+             parser->next_token.type != TOK_LT) {
+    /* Bare `raw`/`ptr` is the 8-byte raw storage type. */
     last_type_name = NULL;
     advance_token(parser);
-    base_type = TOK_KW_RAW;
+    base_type = t;
   } else if (t == TOK_KW_REF || t == TOK_KW_OWN ||
-             (t == TOK_KW_RAW && parser->next_token.type == TOK_LT)) {
-    /* `ref<T>`, `own<T>` and `raw<T>` are all pointer-like wrappers. The
-       pointee name is kept so `raw<char>` indexes one byte at a time. */
+             ((t == TOK_KW_RAW || t == TOK_KW_PTR) &&
+              parser->next_token.type == TOK_LT)) {
+    /* `ref<T>`, `own<T>`, `raw<T>` and `ptr<T>` are pointer-like wrappers.
+       The pointee name is kept so `raw<char>`/`ptr<char>` index by byte. */
     last_type_name = NULL;
     advance_token(parser);
-    consume(parser, TOK_LT, "Expected '<' after ref/own/raw");
+    consume(parser, TOK_LT, "Expected '<' after pointer type");
     TokenType pointee_type = parse_type(parser);
     const char *pointee_name = last_type_name;
     if (!pointee_name) pointee_name = primitive_type_name(pointee_type);
@@ -2753,8 +2756,9 @@ static ASTNode *parse_statement(Parser *parser) {
   bool is_decl = false;
   if (peek_type == TOK_KW_INT || peek_type == TOK_KW_FLOAT ||
       peek_type == TOK_KW_BOOL || peek_type == TOK_KW_CHAR ||
-      peek_type == TOK_KW_STRING || peek_type == TOK_KW_RAW ||
-      peek_type == TOK_KW_REF || peek_type == TOK_KW_OWN ||
+      peek_type == TOK_KW_STRING || peek_type == TOK_KW_PTR ||
+      peek_type == TOK_KW_RAW || peek_type == TOK_KW_REF ||
+      peek_type == TOK_KW_OWN ||
       peek_type == TOK_KW_AUTO || peek_type == TOK_KW_TYPEOF ||
       peek_type == TOK_KW_BYTE || peek_type == TOK_KW_WORD ||
       peek_type == TOK_KW_DWORD || peek_type == TOK_KW_QWORD ||

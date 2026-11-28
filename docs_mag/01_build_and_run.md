@@ -116,13 +116,19 @@ EOF
 ## الترجمة لأهداف أخرى
 
 ```bash
-# x86_64 (الافتراضي والناضج)
+# x86_64 (الافتراضي على أجهزة x86)
 ./magc prog.mg --target x86_64 -o prog
 
-# arm64 (قيد الإكمال)
+# arm64 / aarch64 (الافتراضي على أجهزة ARM)
 ./magc prog.mg --target arm64 -o prog_arm
+./magc prog.mg --target aarch64 -o prog_arm
 
-# riscv (قيد الإكمال)
+# ربط كائنات ARM64
+./magc -c --target arm64 lib.mg --entry add -o lib.o
+./magc -c --target arm64 prog.mg -o prog.o
+./mag lib.o prog.o --target arm64 -o prog_arm
+
+# riscv (مخطط له — يفشل فوراً)
 ./magc prog.mg --target riscv -o prog_rv
 ```
 
@@ -135,7 +141,7 @@ EOF
 | `Cannot open 'file.mg'` | المسار خطأ | تحقّق من مسار الملف |
 | `Undefined symbol 'x'` | الرمز غير معرَّف: دالة مدمجة بلا تصريح، أو اسم خطأ، أو method نُظِر بـ `this` | أضف `extern fn` للدالة المدمجة، أو صحّح الاسم، أو استدعِ الـ method بـ `this.<اسم>` — **ترتيب التعريف لا يهم** |
 | `Could not find library module 'x'` | الوحدة غير موجودة في `lib/` | تأكّد من وجود `lib/x.mg` ومن عمل المترجم من جذر المشروع |
-| `Backend 'x' not found` | اسم هدف غير معروف | استخدم `x86_64` أو `arm64` أو `riscv` |
+| `Backend 'x' not found` | اسم هدف غير معروف | استخدم `x86_64` أو `arm64`/`aarch64` أو `windows`/`win64` (`riscv` مخطط له) |
 | `Maximum module nesting depth (32) exceeded` | سلسلة `use` أعمق من 32 | بسّط سلسلة الاستيراد |
 | ناتج فارغ أو غريب | `print` لا يضيف سطراً جديداً | أضف `"\n"` بنفسك |
 | `Segmentation fault` (كود خروج `139`) | خطأ ذاكرة | راجع [13_debugging.md](13_debugging.md#ماذا-تفعل-حين-ينهار-البرنامج) |

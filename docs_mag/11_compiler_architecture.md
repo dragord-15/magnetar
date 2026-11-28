@@ -117,8 +117,12 @@ backend/
 │   ├── codegen.c              توليد تعليمات x86_64 (AsmGen)
 │   ├── encoder.c / .h         ترميز التعليمات إلى بايتات
 │   └── codegen.h
-├── arm64/backend.c            (قيد الإكمال)
-└── riscv/backend.c            (قيد الإكمال)
+├── arm64/
+│   ├── backend.c              تعريف backend ARM64 + MAGO/MAG2 object writer
+│   ├── codegen.c / .h         توليد AArch64 من AST
+│   ├── encoder.c / .h         ترميز التعليمات وإصلاح الإزاحات
+│   └── a64.c / .h             توافقية مع الواجهة القديمة
+└── riscv/backend.c            (مخطط له — يفشل فوراً)
 ```
 
 الواجهة الموحّدة لكل backend:

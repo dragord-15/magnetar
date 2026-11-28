@@ -22,10 +22,16 @@ FRONTEND_SRC = src/main.c \
 BACKEND_SRC = src/backend/backend.c \
       src/backend/elf_writer.c \
       src/backend/pe_writer.c \
+      src/backend/asm_writer.c \
+      src/backend/bin_writer.c \
       src/backend/x86_64/backend.c \
       src/backend/x86_64/codegen.c \
       src/backend/x86_64/encoder.c \
       src/backend/arm64/backend.c \
+      src/backend/arm64/codegen.c \
+      src/backend/arm64/encoder.c \
+      src/backend/arm64/stubs.c \
+      src/backend/arm64/a64.c \
       src/backend/riscv/backend.c
 
 # All source files for magc
@@ -40,7 +46,7 @@ all: clean $(TARGET) mag
 	@echo "✅ Magnetar Compiler & Linker built successfully!"
 	@echo "Run: ./magc <source.mg> [-c] [-o output] [--target arch]"
 	@echo "Run: ./mag <obj1.o> <obj2.o> ... -o <output> [--target arch]"
-	@echo "Targets: x86_64 (default), arm64, riscv (placeholder)"
+	@echo "Targets: native default (arm64 on ARM, x86_64 otherwise), arm64, x86_64, riscv (placeholder)"
 
 # ── Link compiler ──
 $(TARGET): $(OBJS)
@@ -57,7 +63,8 @@ MAG_FRONTEND_OBJS = src/lexer/lexer.o src/parser/parser.o src/semantic/symbols.o
 # ── Link custom linker ──
 MAG_BACKEND_OBJS = src/backend/backend.o src/backend/elf_writer.o src/backend/pe_writer.o \
       src/backend/x86_64/backend.o src/backend/x86_64/codegen.o src/backend/x86_64/encoder.o \
-      src/backend/arm64/backend.o src/backend/riscv/backend.o
+      src/backend/arm64/backend.o src/backend/arm64/codegen.o \
+      src/backend/arm64/encoder.o src/backend/arm64/stubs.o src/backend/arm64/a64.o src/backend/riscv/backend.o
 mag: src/mag.o $(MAG_BACKEND_OBJS) $(MAG_FRONTEND_OBJS)
 	@echo "🔗 Linking custom linker mag..."
 	$(CC) $(CFLAGS) -o $@ src/mag.o $(MAG_BACKEND_OBJS) $(MAG_FRONTEND_OBJS) $(LDFLAGS)

@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "arm64/backend.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +10,6 @@ static Backend* backends[MAX_BACKENDS];
 static int backend_count = 0;
 
 extern Backend* backend_x86_64_get(void);
-extern Backend* backend_arm64_get(void);
 extern Backend* backend_riscv_get(void);
 
 void backend_register(Backend* backend) {

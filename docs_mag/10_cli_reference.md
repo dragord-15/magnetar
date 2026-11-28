@@ -3,8 +3,8 @@
 > **TL;DR**
 > - `./magc <source.mg> [خيارات]` — والخيارات: `-c`, `-o`, `--target`, `--format`, `--watch`, `--help`.
 > - بلا `-o` ينتج `a.out`، ومع `-c` ينتج كائناً باسم مشتق من اسم المصدر.
-> - الأهداف: `x86_64` مستقر، `arm64`/`riscv` قيد الإكمال، `baremetal` غير منفّذ.
-> - صيغة ELF فقط؛ `asm` و `bin` مخطط لها.
+> - الأهداف: `x86_64` مستقر، `arm64`/`aarch64` يعملان، `riscv` مخطط له، `baremetal` غير منفّذ.
+> - الصيغ: `elf` (افتراضي)، `pe` (x86_64 فقط)، `asm` (قائمة تجميع)، `bin` (بايتات خام).
 > - كود خروج **المترجم**: `0` نجاح و `1` خطأ (ملف أو خيار أو ترجمة).
 
 **حالة الدعم:** ✅ مستقر
@@ -32,23 +32,22 @@
 
 ```text
 Magnetar Compiler v3.5
-Usage: ./magc <source.mg> [-c] [-o <output>] [--target <arch>] [--format <fmt>] [--watch|-w]
+Usage: ./magc <source.mg> [-c] [-o <output>] [--target <arch>] [--format <fmt>] [--entry <name>] [--watch|-w]
 
 Options:
   -c                Compile to object file (.o)
   -o <output>       Output file name
-  --target <arch>   Target architecture: x86_64 (default), arm64, riscv
-  --format <fmt>    Output format: elf (default)
+  --target <arch>   Target: x86_64, arm64/aarch64 (native default on ARM), riscv, windows/win64
+  --format <fmt>    Output format: elf (default), pe (x86_64 only), asm, bin
   -w, --watch       Live compile and run on file changes
   -h, --help        Show this help message
 
 Targets status:
-  x86_64            Stable (ELF on Linux)
-  arm64             Backend present - may need more testing
-  riscv             Backend present - may need more testing
-  baremetal         Not implemented yet
+  x86_64            Stable (ELF64 Linux, PE64 Windows)
+  arm64/aarch64     Working standalone ELF64 AArch64 (native on ARM)
+  riscv             Planned - not implemented
 
-Note: Only ELF format is supported currently.
+Formats: elf (default), pe/windows/exe (x86_64 only), asm (text listing), bin (flat raw bytes).
 ```
 
 ## أمثلة
@@ -84,18 +83,20 @@ Note: Only ELF format is supported currently.
 
 | الهدف | الحالة |
 |-------|--------|
-| `x86_64` | **مستقر** — إخراج ELF على Linux |
-| `arm64` | الواجهة موجودة — قد تحتاج اختباراً |
-| `riscv` | الواجهة موجودة — قد تحتاج اختباراً |
+| `x86_64` | **مستقر** — ELF64 على Linux وPE64 على Windows |
+| `arm64` / `aarch64` | **يعمل** — ELF64 مستقل وربط كائنات عبر `mag` |
+| `windows` / `win64` / `x86_64-windows` | **مستقر** — PE64 عبر خلفية x86_64 |
+| `riscv` | **مخطط له** — يفشل فوراً برسالة واضحة |
 | `baremetal` | **غير منفّذ** — سيرفع خطأ |
 
 ## صيغ الخرج
 
 | الصيغة | الحالة |
 |--------|--------|
-| `elf` | مدعومة (افتراضي) |
-| `asm` | مخطط لها |
-| `bin` | مخطط لها |
+| `elf` | مدعومة (افتراضي) — لكل الأهداف المنفّذة |
+| `pe` / `windows` / `exe` | مدعومة مع `x86_64` فقط |
+| `asm` | مدعومة — قائمة تجميع نصية تعيد إنتاج البايتات تماماً |
+| `bin` | مدعومة — بايتات خام بلا رأس ELF/PE |
 
 ## رسائل الأخطاء
 
@@ -107,11 +108,18 @@ Error: --target requires an argument (x86_64, arm64, riscv)
 
 Error: --target=baremetal is not implemented yet.
        Baremetal target (no OS) is planned but not available in this version.
-       Currently supported: x86_64, arm64, riscv (ELF)
+       Currently supported: x86_64, arm64/aarch64 (ELF); riscv is planned.
+
+Error: PE64 output is only supported with --target x86_64 (got 'arm64').
+
+Error: --format requires an argument (elf, pe, asm, bin)
 
 Error: --format 'xyz' is not implemented yet.
-       Currently supported output formats: elf
-       Planned formats: asm (.s), bin (.bin)
+       Supported: elf, pe (x86_64 only), asm, bin
+
+Error: --format bin cannot be combined with -c (object files are always ELF/MAGO).
+
+Linker Error: object 'lib.o' was built for arm64 but --target x86_64 was selected.
 
 Error: Cannot open 'nosuch.mg'
 

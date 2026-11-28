@@ -22,10 +22,15 @@ src/runtime/memory.c
 src/backend/backend.c
 src/backend/elf_writer.c
 src/backend/pe_writer.c
+src/backend/asm_writer.c
+src/backend/bin_writer.c
 src/backend/x86_64/backend.c
 src/backend/x86_64/codegen.c
 src/backend/x86_64/encoder.c
 src/backend/arm64/backend.c
+src/backend/arm64/codegen.c
+src/backend/arm64/encoder.c
+src/backend/arm64/a64.c
 src/backend/riscv/backend.c
 ```
 
@@ -40,6 +45,8 @@ src/utils/arena.h        src/utils/hashmap.h        src/utils/job_scheduler.h
 src/utils/diagnostics.h  src/utils/slice.h
 src/runtime/gc.h         src/runtime/memory.h
 src/backend/backend.h    src/backend/elf_writer.h   src/backend/pe_writer.h
+src/backend/asm_writer.h src/backend/bin_writer.h    src/backend/arm64/codegen.h
+src/backend/arm64/encoder.h src/backend/arm64/backend.h src/backend/arm64/a64.h
 src/backend/x86_64/codegen.h  src/backend/x86_64/encoder.h
 src/codegen/asm_gen.h    src/codegen/codegen_x64.h  src/codegen/elf_writer.h src/codegen/opcode.h
 src/backup_c/gfx.h
