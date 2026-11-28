@@ -274,6 +274,28 @@ static int get_type_size(const char* name, int base_type) {
     return 8;
 }
 
+/* Element stride used by `alloc<T>(n)` / `new T`. It must agree with
+   sizeof(T) and with the parser's pointer-index stride. Local-stack sizing
+   keeps the separate get_type_size() rules (pointers stay 8 bytes). */
+static int alloc_elem_size(const char* name, int base_type) {
+    if (base_type == TOK_KW_ANY || (name && strcmp(name, "any") == 0)) return 16;
+    if (name) {
+        StructType* st = lookup_struct(name);
+        if (st) return st->size;
+        if (strcmp(name, "char") == 0 || strcmp(name, "byte") == 0 ||
+            strcmp(name, "bool") == 0) return 1;
+        if (strcmp(name, "word") == 0) return 2;
+        if (strcmp(name, "half") == 0 || strcmp(name, "dword") == 0 ||
+            strcmp(name, "float") == 0) return 4;
+    }
+    switch (base_type) {
+        case TOK_KW_CHAR: case TOK_KW_BYTE: case TOK_KW_BOOL: return 1;
+        case TOK_KW_WORD: return 2;
+        case TOK_KW_HALF: case TOK_KW_DWORD: case TOK_KW_FLOAT: return 4;
+        default: return 8;
+    }
+}
+
 static int lookup_field_offset(const char* field_name) {
     for (int i = 0; i < struct_type_count; i++) {
         int offset = get_field_offset(&struct_types[i], field_name);
@@ -3756,7 +3778,7 @@ static void generate_from_ast(AsmGen* gen, ASTNode* node) {
             
         case AST_ALLOC_EXPR: {
             generate_from_ast(gen, node->children[0]); // Evaluate count -> RAX
-            int type_size = get_type_size(node->string_value, node->int_value);
+            int type_size = alloc_elem_size(node->string_value, node->int_value);
             cg_emit_mov_reg_imm64(gen->cg, REG_RCX, type_size);
             cg_emit_imul_reg_reg(gen->cg, REG_RAX, REG_RCX);
             cg_emit_add_reg_imm32(gen->cg, REG_RAX, 8); // total size including 8 bytes metadata
@@ -3781,7 +3803,7 @@ static void generate_from_ast(AsmGen* gen, ASTNode* node) {
         }
         
         case AST_NEW_EXPR: {
-            int type_size = get_type_size(node->string_value, node->int_value);
+            int type_size = alloc_elem_size(node->string_value, node->int_value);
             cg_emit_mov_reg_imm64(gen->cg, REG_RAX, type_size + 8);
             
             cg_emit_push_reg(gen->cg, REG_RAX);
