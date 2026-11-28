@@ -19,6 +19,7 @@
 #include "semantic/symbols.h"
 #include "semantic/redef.h"
 #include "semantic/semantic.h"
+#include "semantic/dce.h"
 #include "ir/ir.h"
 #include "runtime/gc.h"
 #include "utils/diagnostics.h"
@@ -568,11 +569,18 @@ int compile_file(const char* filename, const char* output_name) {
         return 1;
     }
 
-    /* status silenced */;
+    const char* selected_entry = entry_function;
+    if (!entry_explicit && Parser_get_entry_name())
+        selected_entry = Parser_get_entry_name();
+
+    /* Executables only: drop functions unreachable from the entry point and
+       other top-level declarations. Object mode keeps every function because
+       another translation unit may reference it after linking. */
+    if (!object_mode)
+        semantic_drop_unused_functions(ast, selected_entry);
+
     IRProgram* ir = IRProgram_build(ast);
     IRProgram_optimize(ir);
-
-    /* status silenced */;
 
     Backend* backend = backend_get(target_arch);
     if (!backend) {
@@ -584,10 +592,6 @@ int compile_file(const char* filename, const char* output_name) {
         GC_shutdown();
         return 1;
     }
-
-    const char* selected_entry = entry_function;
-    if (!entry_explicit && Parser_get_entry_name())
-        selected_entry = Parser_get_entry_name();
 
     void* bstate = backend->create();
     if (backend->set_entry)

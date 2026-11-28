@@ -26,6 +26,7 @@ run_suite "Optional bounds checking" tests/bounds_check.sh
 run_suite "Redefinition warnings" tests/redefinition.sh
 run_suite "Semantic validation" tests/semantic.sh
 run_suite "IR constant folding" tests/ir_folding.sh
+run_suite "Program-level dead code elimination" tests/dce.sh
 run_suite "x86_64 / ARM64 parity" tests/parity.sh
 run_suite "x86_64 ELF/MAGO/PE64 byte regression" tests/x86_no_regression.sh
 

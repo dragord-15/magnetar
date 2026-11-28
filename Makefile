@@ -10,6 +10,7 @@ FRONTEND_SRC = src/main.c \
       src/semantic/types.c \
       src/semantic/redef.c \
       src/semantic/semantic.c \
+      src/semantic/dce.c \
       src/ir/ir.c \
       src/ir/ir_builder.c \
       src/ir/ir_optimizer.c \
@@ -58,7 +59,7 @@ $(TARGET): $(OBJS)
 
 # Objects the mag linker needs from the frontend (codegen references semantic symbols)
 MAG_FRONTEND_OBJS = src/lexer/lexer.o src/parser/parser.o src/semantic/symbols.o \
-      src/semantic/types.o src/semantic/redef.o src/semantic/semantic.o src/ir/ir.o src/ir/ir_builder.o src/ir/ir_optimizer.o \
+      src/semantic/types.o src/semantic/redef.o src/semantic/semantic.o src/semantic/dce.o src/ir/ir.o src/ir/ir_builder.o src/ir/ir_optimizer.o \
       src/utils/arena.o src/utils/hashmap.o src/utils/diagnostics.o \
       src/runtime/gc.o src/runtime/memory.o
 
