@@ -17,6 +17,7 @@
 #include "parser/ast.h"
 #include "parser/parser.h"
 #include "semantic/symbols.h"
+#include "semantic/redef.h"
 #include "ir/ir.h"
 #include "runtime/gc.h"
 #include "utils/diagnostics.h"
@@ -551,6 +552,10 @@ int compile_file(const char* filename, const char* output_name) {
         GC_shutdown();
         return 1;
     }
+
+    /* `use` is textual inclusion; warn (but keep the first definition) when
+       two merged modules define the same top-level name. */
+    semantic_warn_redefinitions(ast);
 
     /* status silenced */;
     IRProgram* ir = IRProgram_build(ast);
