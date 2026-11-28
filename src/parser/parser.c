@@ -514,8 +514,8 @@ static bool token_starts_type(Parser *parser) {
   case TOK_KW_STRING: case TOK_KW_PTR: case TOK_KW_RAW: case TOK_KW_REF:
   case TOK_KW_OWN:
   case TOK_KW_AUTO: case TOK_KW_TYPEOF: case TOK_KW_BYTE: case TOK_KW_WORD:
-  case TOK_KW_DWORD: case TOK_KW_QWORD: case TOK_KW_HALF: case TOK_KW_FIXED:
-  case TOK_KW_ARRAY: case TOK_KW_TUPLE:
+  case TOK_KW_DWORD: case TOK_KW_QWORD: case TOK_KW_HALF: case TOK_KW_DOUBLE:
+  case TOK_KW_FIXED: case TOK_KW_ARRAY: case TOK_KW_TUPLE:
   case TOK_KW_DYN: case TOK_KW_SLICE: case TOK_KW_ANY:
   case TOK_KW_RANGE:
   case TOK_KW_VOLATILE: case TOK_KW_REGISTER:
@@ -1083,6 +1083,15 @@ static TokenType parse_type(Parser *parser) {
 static TokenType parse_type_impl(Parser *parser) {
   if (consume_type_qualifiers(parser)) last_type_is_volatile = true;
   TokenType t = parser->current_token.type;
+  if (t == TOK_KW_DOUBLE) {
+    /* `double` used to lex as an identifier, so `double x = 1.5;` silently
+       became an unknown-typed declaration and printed the raw float bits.
+       Reject it explicitly instead of producing garbage. */
+    report_error(parser,
+                 "type 'double' is not supported; use 'float' (32-bit IEEE)");
+    advance_token(parser);
+    return TOK_UNKNOWN;
+  }
   if (t == TOK_KW_AUTO) {
     advance_token(parser);
     return TOK_KW_AUTO;
@@ -2808,7 +2817,8 @@ static ASTNode *parse_statement(Parser *parser) {
       peek_type == TOK_KW_AUTO || peek_type == TOK_KW_TYPEOF ||
       peek_type == TOK_KW_BYTE || peek_type == TOK_KW_WORD ||
       peek_type == TOK_KW_DWORD || peek_type == TOK_KW_QWORD ||
-      peek_type == TOK_KW_HALF || peek_type == TOK_KW_FIXED ||
+      peek_type == TOK_KW_HALF || peek_type == TOK_KW_DOUBLE ||
+      peek_type == TOK_KW_FIXED ||
       peek_type == TOK_KW_ARRAY || peek_type == TOK_KW_TUPLE ||
       peek_type == TOK_KW_DYN || peek_type == TOK_KW_SLICE ||
       peek_type == TOK_KW_ANY ||
@@ -3635,6 +3645,7 @@ static ASTNode *parse_statement(Parser *parser) {
                         peek_type == TOK_KW_BYTE || peek_type == TOK_KW_WORD ||
                         peek_type == TOK_KW_DWORD ||
                         peek_type == TOK_KW_QWORD || peek_type == TOK_KW_HALF ||
+                        peek_type == TOK_KW_DOUBLE ||
                         peek_type == TOK_KW_VOLATILE ||
                         peek_type == TOK_KW_REGISTER);
 

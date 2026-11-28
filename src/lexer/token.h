@@ -46,7 +46,11 @@ typedef enum {
     TOK_RANGE,                 // ..
     
     TOK_ERROR,
-    TOK_UNKNOWN
+    TOK_UNKNOWN,
+    /* Appended last on purpose: several backends encode TokenType values in
+       object files, so inserting a keyword in the middle would shift every
+       later opcode and corrupt emitted metadata. */
+    TOK_KW_DOUBLE
 } TokenType;
 
 typedef struct {
