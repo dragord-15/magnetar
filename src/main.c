@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
+#include <ucontext.h>
 #include "backend/backend.h"
 #include "backend/elf_writer.h"
 #include "backend/asm_writer.h"
@@ -455,6 +456,40 @@ static const char* output_format = "elf"; /* elf, pe, asm, bin */
 static const char* requested_format = NULL; /* explicit --format wins over target aliases */
 static const char* entry_function = "main";
 static int entry_explicit = 0;
+static int bounds_check = 0;
+
+/* Minimum crash diagnostics: if magc itself faults, report the faulting
+   instruction pointer, stack/frame pointers and fault address before exiting.
+   Generated programs are libc-free; their out-of-bounds protection is the
+   separate compile-time `--bounds-check` path in the parser. */
+static void magnetar_segv_handler(int signo, siginfo_t* info, void* context) {
+    ucontext_t* uc = (ucontext_t*)context;
+    unsigned long long rip = 0, rsp = 0, rbp = 0;
+    const void* addr = info ? info->si_addr : NULL;
+#if defined(__x86_64__) || defined(_M_X64)
+    rip = (unsigned long long)uc->uc_mcontext.gregs[REG_RIP];
+    rsp = (unsigned long long)uc->uc_mcontext.gregs[REG_RSP];
+    rbp = (unsigned long long)uc->uc_mcontext.gregs[REG_RBP];
+#elif defined(__aarch64__) || defined(__ARM_ARCH_8A__)
+    rip = (unsigned long long)uc->uc_mcontext.pc;
+    rsp = (unsigned long long)uc->uc_mcontext.sp;
+    rbp = (unsigned long long)uc->uc_mcontext.regs[29];
+#else
+    (void)uc;
+#endif
+    fprintf(stderr, "SIGSEGV at rip=0x%llx rsp=0x%llx rbp=0x%llx addr=%p\n",
+            rip, rsp, rbp, addr);
+    _exit(128 + signo);
+}
+
+static void install_crash_handler(void) {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_sigaction = magnetar_segv_handler;
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGSEGV, &sa, NULL);
+}
 
 int compile_file(const char* filename, const char* output_name) {
     FILE* file = fopen(filename, "r");
@@ -506,6 +541,7 @@ int compile_file(const char* filename, const char* output_name) {
 
     Parser parser;
     Parser_init(&parser, &lexer);
+    Parser_set_bounds_check(bounds_check != 0);
     ASTNode* ast = Parser_parse(&parser);
 
     if (diag_has_errors() || parser.has_error) {
@@ -602,6 +638,7 @@ int compile_file(const char* filename, const char* output_name) {
 }
 
 int main(int argc, char** argv) {
+    install_crash_handler();
     if (argc < 2) {
         printf("Magnetar Compiler v3.5\n");
         printf("Usage: %s <source.mg> [-c] [-o <output>] [--target <arch>] [--format <fmt>] [--entry <name>] [--watch|-w]\n", argv[0]);
@@ -611,6 +648,7 @@ int main(int argc, char** argv) {
         printf("  --target <arch>   Target: x86_64, arm64/aarch64 (native default on ARM), riscv, windows/win64\n");
         printf("  --format <fmt>    Output format: elf (default), pe (x86_64 only), asm, bin\n");
         printf("  --entry <name>    Entry function called at startup (default: main)\n");
+        printf("  --bounds-check    Reject literal indices outside fixed-array bounds at compile time\n");
         printf("  -w, --watch       Live compile and run on file changes\n");
         printf("\nTargets status:\n");
         printf("  x86_64            Stable (ELF64 Linux, PE64 Windows)\n");
@@ -629,6 +667,7 @@ int main(int argc, char** argv) {
             printf("  --target <arch>   Target: x86_64, arm64/aarch64 (native default on ARM), riscv, windows/win64\n");
             printf("  --format <fmt>    Output format: elf (default), pe (x86_64 only), asm, bin\n");
             printf("  --entry <name>    Entry function called at startup (default: main)\n");
+            printf("  --bounds-check    Reject literal indices outside fixed-array bounds at compile time\n");
             printf("  -w, --watch       Live compile and run on file changes\n");
             printf("  -h, --help        Show this help message\n");
             printf("\nTargets status:\n");
@@ -725,6 +764,8 @@ int main(int argc, char** argv) {
             }
             entry_function = argv[i] + 8;
             entry_explicit = 1;
+        } else if (strcmp(argv[i], "--bounds-check") == 0) {
+            bounds_check = 1;
         } else if (strcmp(argv[i], "--watch") == 0 || strcmp(argv[i], "-w") == 0) {
             watch_mode = 1;
         } else if (strncmp(argv[i], "--", 2) == 0) {

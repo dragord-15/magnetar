@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "struct_registry.h"
+#include "../utils/diagnostics.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -19,6 +20,12 @@ ClassInheritance class_inherits[64];
 int class_inherits_count = 0;
 
 const char *last_type_name = NULL;
+
+/* Set by magc --bounds-check. Only fixed arrays have a statically known
+   extent, so literal indices into dyn/slice/alloc are not rejected here. */
+static bool parser_bounds_check = false;
+
+void Parser_set_bounds_check(bool enabled) { parser_bounds_check = enabled; }
 
 /* Converts a token's 1-based line/column into an offset in the lexer source.
    Used to capture the original text of an `asm { ... }` block. */
@@ -327,6 +334,43 @@ static ParserVar *lookup_parser_var(const char *name) {
     }
   }
   return NULL;
+}
+
+/* First extent of a genuinely fixed array (0 for dyn/slice/pointer/member
+   accesses), used by the optional literal-index range check. */
+static int parser_fixed_extent(const ASTNode *node) {
+  if (!node || node->type != AST_IDENTIFIER_EXPR || !node->token.text)
+    return 0;
+  ParserVar *pv = lookup_parser_var(node->token.text);
+  if (pv && pv->type == TOK_KW_FIXED && pv->array_dim_count > 0 &&
+      pv->array_dims[0] > 0)
+    return pv->array_dims[0];
+  return 0;
+}
+
+/* Report a statically provable out-of-bounds literal index. */
+static void check_literal_index(Parser *parser, ASTNode *index, int extent,
+                                int dimension) {
+  if (!parser_bounds_check || extent <= 0 || !index ||
+      index->type != AST_LITERAL_EXPR || index->token.type != TOK_INT_LITERAL ||
+      !index->token.text)
+    return;
+  char *end = NULL;
+  errno = 0;
+  long long value = strtoll(index->token.text, &end, 10);
+  if (errno || end == index->token.text || *end != '\0') return;
+  if (value < 0 || value >= extent) {
+    char msg[160], hint[128];
+    snprintf(msg, sizeof(msg),
+             "array index %lld is out of bounds for dimension %d (size %d)",
+             value, dimension + 1, extent);
+    snprintf(hint, sizeof(hint),
+             "valid indices are 0..%d; compile without --bounds-check to disable this check",
+             extent - 1);
+    diag_report_error(index->token.line, index->token.column, msg,
+                      index->token.text, hint);
+    parser->has_error = true;
+  }
 }
 
 /* `range` values are ordinary structs with three 8-byte fields.  Registering
@@ -805,8 +849,6 @@ static bool match(Parser *parser, TokenType type) {
   }
   return false;
 }
-
-#include "../utils/diagnostics.h"
 
 static void report_error(Parser *parser, const char *message) {
   diag_report_error(parser->current_token.line, parser->current_token.column,
@@ -1442,6 +1484,8 @@ static ASTNode *parse_postfix(Parser *parser, ASTNode *node) {
       }
     } else if (match(parser, TOK_LBRACKET)) {
       ASTNode *index_expr = parse_expression(parser);
+      int first_extent = parser_fixed_extent(node);
+      check_literal_index(parser, index_expr, first_extent, 0);
       if (parser->current_token.type == TOK_RANGE) {
         Token range_tok = parser->current_token;
         advance_token(parser); // Consume '..'
@@ -1478,6 +1522,8 @@ static ASTNode *parse_postfix(Parser *parser, ASTNode *node) {
                  parser->current_token.type == TOK_LBRACKET) {
             advance_token(parser);
             ASTNode *next_index = parse_expression(parser);
+            if (used < dim_count && dims[used] > 0)
+              check_literal_index(parser, next_index, dims[used], used);
             consume(parser, TOK_RBRACKET, "Expected ']' after index");
             int next_stride = elem_slot;
             for (int d = used + 1; d < dim_count; d++)

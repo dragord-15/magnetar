@@ -22,6 +22,7 @@ run_suite "Core regression suite (native target)" tests/run.sh
 run_suite "Standalone ARM64 ELF smoke" tests/arm64_smoke.sh
 run_suite "ARM64 object linking" tests/arm64_link.sh
 run_suite "CLI formats and aliases" tests/cli_formats.sh
+run_suite "Optional bounds checking" tests/bounds_check.sh
 run_suite "x86_64 / ARM64 parity" tests/parity.sh
 run_suite "x86_64 ELF/MAGO/PE64 byte regression" tests/x86_no_regression.sh
 

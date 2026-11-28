@@ -17,5 +17,8 @@ void Parser_init(Parser* parser, Lexer* lexer);
 ASTNode* Parser_parse(Parser* parser);
 /* Function marked with `entry fn name(...)`, or NULL when absent. */
 const char* Parser_get_entry_name(void);
+/* Enable compile-time range checks for literal indices into fixed arrays.
+   Off by default; selected by `magc --bounds-check`. */
+void Parser_set_bounds_check(bool enabled);
 
 #endif // MAGNETAR_PARSER_H

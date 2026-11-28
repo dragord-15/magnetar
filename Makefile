@@ -170,6 +170,8 @@ uninstall:
 test: $(TARGET) mag
 	@echo "🧪 Running tests/run.sh..."
 	@bash tests/run.sh
+	@echo "🧪 Running tests/bounds_check.sh..."
+	@bash tests/bounds_check.sh
 	@echo "🧪 Running tests/parity.sh..."
 	@bash tests/parity.sh
 	@echo "✅ All test suites passed!"

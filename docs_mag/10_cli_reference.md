@@ -25,6 +25,7 @@
 | `--target=<arch>` | صيغة مختصرة للخيار نفسه |
 | `--format <fmt>` | تحديد صيغة الخرج |
 | `--format=<fmt>` | صيغة مختصرة |
+| `--bounds-check` | رفض الفهارس الحرفية خارج حدود المصفوفات `fixed` وقت الترجمة (افتراضياً متوقف) |
 | `--watch` , `-w` | وضع المراقبة الحيّ (Live Coding) |
 | `--help` , `-h` | عرض رسالة المساعدة |
 
@@ -39,6 +40,7 @@ Options:
   -o <output>       Output file name
   --target <arch>   Target: x86_64, arm64/aarch64 (native default on ARM), riscv, windows/win64
   --format <fmt>    Output format: elf (default), pe (x86_64 only), asm, bin
+  --bounds-check    Reject literal indices outside fixed-array bounds at compile time
   -w, --watch       Live compile and run on file changes
   -h, --help        Show this help message
 
