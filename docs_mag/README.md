@@ -42,6 +42,7 @@
 | 24 | [24_algorithm_hashmap_modules.md](24_algorithm_hashmap_modules.md) | مكتبات الخوارزميات والبحث والترتيب وجداول Hash السريعة |
 | 25 | [25_compiler_mermaid.md](25_compiler_mermaid.md) | مخطط Mermaid تفصيلي لمسار عمل مترجم Magnetar ومكوناته |
 | 26 | [26_performance_diagnosis.md](26_performance_diagnosis.md) | تشخيص الأداء: سرعة الترجمة، سرعة التنفيذ، وحجم المخرجات |
+| — | [planned/mock_builtins.md](planned/mock_builtins.md) | دوال واجهات تجريبية (mock) — ليست وظائف عاملة |
 
 ---
 
@@ -73,11 +74,11 @@ EOF
 ## حالة اللغة باختصار
 
 - ✅ **x86_64 ELF مستقر** — برامج مستقلة بلا libc، تعمل على Linux 64-bit.
-- ⚠️ **arm64 / riscv قيد الإكمال** — الـ backends موجودة لكنها تحتاج اختباراً أوسع.
-- ❌ **baremetal / asm / bin غير منفّذة** — تُرفض بخيارات CLI واضحة.
+- ✅ **arm64/aarch64 يعمل** — ELF مستقل وربط كائنات عبر `mag --target arm64`؛ `riscv` مخطط له ويفشل فوراً.
+- ✅ **asm/bin مدعومتان** — قوائم نصية أو بايتات خام على الهدفين؛ `baremetal` مرفوض صراحةً.
 - ⚠️ **بعض builtins واجهات فقط** — `audio_play` و `sql_*` و `crypto_*` و `regex_match`
-  تطبع رسائل فقط؛ راجع [09_builtins.md](09_builtins.md#دوال-غير-مضمونة).
-- ⚠️ **لا فحص حدود ولا فحص أنواع صارم** — الفهرسة خارج النطاق سلوك غير معرّف.
+  تُطبع رسائل ثابتة؛ راجع [planned/mock_builtins.md](planned/mock_builtins.md).
+- ⚠️ **فحص الأنواع جزئي** — فحص الحدود متاح اختيارياً بـ `--bounds-check` للمصفوفات `fixed`.
 
 التفاصيل الكاملة في [12_notes_and_limitations.md](12_notes_and_limitations.md).
 

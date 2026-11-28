@@ -5,7 +5,7 @@
 > - ثلاث طبقات: `sys_*` خام برقام syscall، و `fs_*`/`net_*` مغلّفات مبسّطة، ودوال عالية المستوى ناقصة.
 > - أمثلة جاهزة للتشغيل في [أمثلة عملية لأهم 10 دوال](#أمثلة-عملية-لأهم-10-دوال).
 > - كل `sys_*` تفترض **Linux x86_64**، وأرقامها هي أرقام syscall مباشرة لا تجريداً.
-> - `audio_play` و `sql_*` و `crypto_*` و `regex_match` تُطبع رسائل فقط — لا تعتمد عليها في الإنتاج.
+> - أسماء الواجهات التجريبية (`audio_play`, `sql_*`, `crypto_*`, `regex_match`, …) مذكورة في [planned/mock_builtins.md](planned/mock_builtins.md) وليست وظائف عاملة.
 
 **حالة الدعم:** ⚠️ جزئي (بعض الدوال واجهات فقط)
 
@@ -428,38 +428,20 @@ let n = len("abc");   // 3
 | الفئة | الدوال |
 |-------|--------|
 | الأدوات | `print_str`, `print_int`, `print_float`, `read_line` |
-| الصوت | `audio_play` |
-| قاعدة البيانات | `sql_connect`, `sql_query` |
-| التشفير | `crypto_hash_sha256`, `crypto_aes_encrypt` |
-| التعابير النمطية | `regex_match` |
-| الخيوط | `thread_spawn`, `thread_join`, `lock`, `unlock` |
 | الوصول لعنوان دالة | `fn_addr` |
+
+> الفئات الأخرى في هذا الجدول (`audio_play`, `sql_*`, `crypto_*`, `regex_match`,
+> `thread_*`) هي واجهات تجريبية فقط — راجع
+> [planned/mock_builtins.md](planned/mock_builtins.md).
 
 ---
 
-## دوال غير مضمونة
+## دوال واجهة فقط (Mock)
 
-الدوال التالية موجودة كإعلان فقط في v3.5، ومعظمها **يطبع رسالة ثابتة** ويعيد
-قيمة وهمية (mock)، ولا ينفّذ الوظيفة التي توحي بها أسماؤها:
-
-| الدالة | ما تفعله فعلياً في v3.5 | القيمة المعادة |
-|--------|-------------------------|----------------|
-| `audio_play(path)` | تطبع `[Audio] Playing track: '...'` | لا شيء |
-| `sql_connect(url)` | تطبع `[SQL] Connecting to database: '...'` | `42` (وهمية) |
-| `sql_query(db, q)` | تطبع `[SQL] Executing query ...` | نص `SQL Result Set Mock` |
-| `crypto_hash_sha256(data)` | تطبع `[Crypto] Computing SHA-256 hash ...` | هاش ثابت مطبوع |
-| `crypto_aes_encrypt(data, key)` | تطبع `[Crypto] Encrypting data: ...` | `EncryptedMockDataBlob` |
-| `regex_match(pattern, text)` | تطبع `[Regex] Matching pattern: ...` | `1` دائماً |
-| `process_exec(cmd)` | تطبع `[Process] Executing system command: ...` | `0` |
-| `os_get_env(name)` | تطبع `[OS] Reading environment variable: ...` | `MagnetarEnvValue` |
-| `os_get_platform()` | تطبع اسم المنصة | `MagnetarOS-x86_64-Linux` |
-| `thread_spawn(fn)` | تطبع `[Thread] Spawning new concurrent thread ...` | `1001` |
-| `thread_join(id)` | تطبع `[Thread] Waiting for thread ID: ...` | — |
-| `lock()` / `unlock()` | تطبع `[Thread] Mutex locked/unlocked successfully.` | — |
-| `net_listen` / `net_accept` / `net_send` / `net_close` | تطبع `[Net] ...` | — |
-
-> **لا تعتمد عليها في الإنتاج حتى إشعار آخر.** إن احتجتَ تشفيراً أو قاعدة بيانات
-> أو شبكة فعلية، استعمل `sys_*` مباشرة (وهو ما تفعله هذه اللغات منخفضة المستوى).
+الأسماء ذات السلوك التجريبي (مثل `audio_play` و`sql_*` و`crypto_*` و`regex_match`
+و`net_*` و`thread_*`) **ليست وظائف عاملة**؛ نُقل جدولها الكامل ومخرجاتها الوهمية
+إلى [planned/mock_builtins.md](planned/mock_builtins.md). استخدم `sys_*` ل syscall
+حقيقي، و`spawn`/`async`/`await` لتزامن فعلي.
 
 ---
 

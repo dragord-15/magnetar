@@ -101,7 +101,7 @@ Start at [docs_mag/README.md](docs_mag/README.md). Useful entry points:
 - **Baremetal** — not implemented and explicitly rejected.
 - Output formats: `elf` (default), `pe` (x86_64 only), `asm` (assembly listing), `bin` (flat raw bytes).
 - Some built-ins such as `audio_play`, `sql_*`, `crypto_*`, and `regex_match` are placeholders;
-  see [09_builtins.md](docs_mag/09_builtins.md).
+  see [planned/mock_builtins.md](docs_mag/planned/mock_builtins.md).
 
 ---
 
