@@ -34,14 +34,15 @@ make
 | `make` | بناء `./magc` و `./mag` |
 | `make clean` | حذف ملفات البناء (الكائنات `.o` والتنفيذيَين) |
 | `make install` | تثبيت المترجم في النظام |
+| `make test` | يبني ثم يشغّل `tests/run.sh` و `tests/parity.sh` |
 | `make uninstall` | إزالة ما ثُبِّت |
 | `make info` | معلومات عن المشروع |
 | `make help` | عرض قائمة الأهداف |
 
-> **لا يوجد هدف `make examples`**، ولا وصفة فعّالة لـ `make test`: الأمر `make test`
-> يطبع `Nothing to be done for 'test'` ولا يفعل شيئاً — رغم أن `make help` يَعِد به.
-> للتحقق من الأمثلة يدوياً راجع
+> **لا يوجد هدف `make examples`**. للتحقق من الأمثلة يدوياً راجع
 > [12_notes_and_limitations.md](12_notes_and_limitations.md#كيف-تتحقق-من-الاستقرار-بنفسك).
+> `make test` يطبع ملخّص `83/83` من `tests/run.sh` ثم ملخّص `74/74` لكل هدف من
+> `tests/parity.sh`، ويفشل بأي اختبار.
 
 ### البناء اليدوي (بدون Makefile)
 

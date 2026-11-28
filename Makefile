@@ -167,6 +167,12 @@ uninstall:
 	@echo "✅ Magnetar uninstalled!"
 
 # ── اختبار ──
+test: $(TARGET) mag
+	@echo "🧪 Running tests/run.sh..."
+	@bash tests/run.sh
+	@echo "🧪 Running tests/parity.sh..."
+	@bash tests/parity.sh
+	@echo "✅ All test suites passed!"
 
 # ── معلومات ──
 info:
@@ -183,7 +189,7 @@ help:
 	@echo "  make clean    - Clean build files"
 	@echo "  make install  - Install to /usr/local/bin"
 	@echo "  make uninstall- Remove from system"
-	@echo "  make test     - Run test with hello.mg"
+	@echo "  make test     - Run tests/run.sh and tests/parity.sh"
 	@echo "  make info     - Show installation info"
 	@echo "  make help     - Show this message"
 
