@@ -78,7 +78,8 @@ EOF
 - ✅ **asm/bin مدعومتان** — قوائم نصية أو بايتات خام على الهدفين؛ `baremetal` مرفوض صراحةً.
 - ⚠️ **بعض builtins واجهات فقط** — `audio_play` و `sql_*` و `crypto_*` و `regex_match`
   تُطبع رسائل ثابتة؛ راجع [planned/mock_builtins.md](planned/mock_builtins.md).
-- ⚠️ **فحص الأنواع جزئي** — فحص الحدود متاح اختيارياً بـ `--bounds-check` للمصفوفات `fixed`.
+- ⚠️ **فحص الأنواع جزئي** — يرفض الأسماء غير المعرّفة وتعارض النص مع المتغيّر العددي،
+  ويحذّر من غياب `main`؛ فحص الحدود متاح اختيارياً بـ `--bounds-check` للمصفوفات `fixed`.
 
 التفاصيل الكاملة في [12_notes_and_limitations.md](12_notes_and_limitations.md).
 

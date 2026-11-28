@@ -18,6 +18,7 @@
 #include "parser/parser.h"
 #include "semantic/symbols.h"
 #include "semantic/redef.h"
+#include "semantic/semantic.h"
 #include "ir/ir.h"
 #include "runtime/gc.h"
 #include "utils/diagnostics.h"
@@ -556,6 +557,16 @@ int compile_file(const char* filename, const char* output_name) {
     /* `use` is textual inclusion; warn (but keep the first definition) when
        two merged modules define the same top-level name. */
     semantic_warn_redefinitions(ast);
+
+    /* Lightweight semantic validation: undefined names and obvious type
+       mismatches must fail at compile time instead of producing garbage. */
+    if (semantic_check(ast, entry_explicit ? entry_function : NULL) > 0) {
+        diag_print_summary();
+        free(source);
+        ASTNode_free(ast);
+        GC_shutdown();
+        return 1;
+    }
 
     /* status silenced */;
     IRProgram* ir = IRProgram_build(ast);
