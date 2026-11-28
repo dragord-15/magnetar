@@ -3325,16 +3325,37 @@ static void generate_from_ast(AsmGen* gen, ASTNode* node) {
                 break;
             }
 
+            /* A literal right operand needs no expression evaluation and
+               cannot clobber RAX, so keep the left operand in its register
+               instead of spilling it through push/pop. This is the first
+               register-friendly step toward the full allocator/SysV ABI. */
+            ASTNode* rhs_node = node->child_count > 1 ? node->children[1] : NULL;
+            bool rhs_const_int = !is_float && rhs_node &&
+                rhs_node->type == AST_LITERAL_EXPR &&
+                rhs_node->token.type == TOK_INT_LITERAL &&
+                rhs_node->token.text;
+            int64_t rhs_const_value = 0;
+            if (rhs_const_int) {
+                char* end = NULL;
+                rhs_const_value = strtoll(rhs_node->token.text, &end, 10);
+                if (end == rhs_node->token.text || *end != '\0')
+                    rhs_const_int = false;
+            }
+
             generate_from_ast(gen, node->children[0]);
             if (is_float) {
                 if (!lhs_float) cg_emit_cvtsi2ss_xmm_reg(gen->cg, REG_XMM0, REG_RAX);
                 cg_emit_sub_reg_imm32(gen->cg, REG_RSP, 16);
                 cg_emit_movss_mem_xmm(gen->cg, REG_RSP, 0, REG_XMM0);
-            } else {
+            } else if (!rhs_const_int) {
                 cg_emit_push_reg(gen->cg, REG_RAX);
             }
             
-            generate_from_ast(gen, node->children[1]);
+            if (rhs_const_int) {
+                cg_emit_mov_reg_imm64(gen->cg, REG_RCX, (uint64_t)rhs_const_value);
+            } else {
+                generate_from_ast(gen, node->children[1]);
+            }
             
             if (is_float) {
                 if (!rhs_float) cg_emit_cvtsi2ss_xmm_reg(gen->cg, REG_XMM0, REG_RAX);
@@ -3373,8 +3394,10 @@ static void generate_from_ast(AsmGen* gen, ASTNode* node) {
                     gen->cg->size = sz;
                 }
             } else {
-                cg_emit_mov_reg_reg(gen->cg, REG_RCX, REG_RAX);
-                cg_emit_pop_reg(gen->cg, REG_RAX);
+                if (!rhs_const_int) {
+                    cg_emit_mov_reg_reg(gen->cg, REG_RCX, REG_RAX);
+                    cg_emit_pop_reg(gen->cg, REG_RAX);
+                }
                 if (node->token.type == TOK_PLUS) cg_emit_add_reg_reg(gen->cg, REG_RAX, REG_RCX);
                 else if (node->token.type == TOK_MINUS) cg_emit_sub_reg_reg(gen->cg, REG_RAX, REG_RCX);
                 else if (node->token.type == TOK_STAR) cg_emit_imul_reg_reg(gen->cg, REG_RAX, REG_RCX);
